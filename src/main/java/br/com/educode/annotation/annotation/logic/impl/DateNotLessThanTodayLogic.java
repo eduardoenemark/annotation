@@ -20,7 +20,7 @@ import java.time.LocalDate;
 public class DateNotLessThanTodayLogic implements AnnotationLogic<DateNotLessThanToday>{
 
     @Override
-    public void validate(DateNotLessThanToday annotation, Object object, Field field, Method get, Method set, OperationEnum operation) throws AnnotationException {
+    public void apply(DateNotLessThanToday annotation, Object object, Field field, Method get, Method set, OperationEnum operation) throws AnnotationException {
         try {
             LocalDate now = LocalDate.now();
             LocalDate value = (LocalDate) get.invoke(object);

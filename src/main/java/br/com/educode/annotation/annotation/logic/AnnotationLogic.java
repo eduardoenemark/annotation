@@ -17,5 +17,5 @@ import java.lang.annotation.Annotation;
  * @param <T>
  */
 public interface AnnotationLogic <T extends Annotation> {
-    public void validate(T annotation, Object object, Field field, Method get, Method set, OperationEnum operation) throws AnnotationException;
+    public void apply(T annotation, Object object, Field field, Method get, Method set, OperationEnum operation) throws AnnotationException;
 }

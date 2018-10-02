@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 public class UpperCaseLogic implements AnnotationLogic<UpperCase>{
 
     @Override
-    public void validate(UpperCase annotation, Object object, Field field, Method get, Method set, OperationEnum operacao) throws AnnotationException {
+    public void apply(UpperCase annotation, Object object, Field field, Method get, Method set, OperationEnum operacao) throws AnnotationException {
         try {
             String value = (String) get.invoke(object);
             set.invoke(object, upperCase(value));

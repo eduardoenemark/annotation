@@ -21,7 +21,7 @@ import java.util.Random;
 public class RandomNumberLogic implements AnnotationLogic<RandomNumber>{
 
     @Override
-    public void validate(RandomNumber annotation, Object object, Field field, Method get, Method set, OperationEnum operacao) throws AnnotationException {
+    public void apply(RandomNumber annotation, Object object, Field field, Method get, Method set, OperationEnum operacao) throws AnnotationException {
         try {
             set.invoke(object, randomNumber(annotation.bound()));
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {

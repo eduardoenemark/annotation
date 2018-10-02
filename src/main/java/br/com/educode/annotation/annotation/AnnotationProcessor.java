@@ -81,7 +81,7 @@ public class AnnotationProcessor {
                     continue;
                 }
                 if (applyProcessorOnField(operationEnum, isFree, isInsert, isUpdate, isDelete)) {
-                    annotationLogic.validate(annotation, object, field, get, set, operationEnum);
+                    annotationLogic.apply(annotation, object, field, get, set, operationEnum);
                 }
             }
         }
