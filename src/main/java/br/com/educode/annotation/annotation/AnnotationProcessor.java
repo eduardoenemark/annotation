@@ -3,13 +3,12 @@ package br.com.educode.annotation.annotation;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.time.LocalDate;
-import java.util.Random;
 import static br.com.educode.annotation.annotation.OperationEnum.DELETE;
 import static br.com.educode.annotation.annotation.OperationEnum.INSERT;
 import static br.com.educode.annotation.annotation.OperationEnum.UPDATE;
 import br.com.educode.annotation.annotation.logic.AnnotationLogic;
 import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -28,6 +27,10 @@ public class AnnotationProcessor {
         super();
     }
 
+    private AnnotationProcessor(AnnotationLogic[] annotationLogics) {
+        this(Arrays.asList(annotationLogics));
+    }
+
     public AnnotationProcessor(List<AnnotationLogic> annotationLogics) {
         this.annotationLogics = new HashMap<>();
         annotationLogics.forEach((annotationLogic) -> {
@@ -43,7 +46,7 @@ public class AnnotationProcessor {
         return processor(object, OperationEnum.FREE);
     }
 
-    public Object processor(Object object, OperationEnum operationEnum) throws Exception {
+    public Object processor(Object object, OperationEnum operationEnum) throws AnnotationException {
         Field[] fields = object.getClass().getDeclaredFields();
         for (Field field : fields) {
             Annotation[] annotations = field.getAnnotations();
@@ -73,7 +76,7 @@ public class AnnotationProcessor {
                     isUpdate = (Boolean) update.invoke(annotation);
                     isDelete = (Boolean) delete.invoke(annotation);
 
-                } catch (Exception exception) {
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException exception) {
                     exception.printStackTrace();
                     continue;
                 }
@@ -121,7 +124,7 @@ public class AnnotationProcessor {
     private static Class getFirstAnnotationType(Type[] types) {
         Class annotation;
         for (Type type : types) {
-            annotation = getAnnotationType(type);
+            annotation = getFirstAnnotationType(type);
             if(annotation != null) {
                 return annotation;
             }
@@ -129,7 +132,7 @@ public class AnnotationProcessor {
         return null;
     }
 
-    private static Class getAnnotationType(Type type) {
+    private static Class getFirstAnnotationType(Type type) {
         if (type instanceof Class) {
             Class classToCheck = (Class) type;
             List<Class> interfaces = Arrays.asList(classToCheck.getInterfaces());
@@ -139,21 +142,13 @@ public class AnnotationProcessor {
         } else if (type instanceof ParameterizedType) {
             Type[] aType = ((ParameterizedType) type).getActualTypeArguments();
             for (Type type1 : aType) {
-                return getAnnotationType(type1);
+                return getFirstAnnotationType(type1);
             }
         } else if (type instanceof GenericArrayType) {
             Type genericComponentType =
                     ((GenericArrayType) type).getGenericComponentType();
-            return getAnnotationType(genericComponentType);
+            return getFirstAnnotationType(genericComponentType);
         }
         return null;
     }
-//    public static String upperCase(String value) {
-//        return (value != null) ? value.toUpperCase() : null;
-//    }
-
-//    public static long randomNumber(int bound) {
-//        return new Random().nextInt(bound);
-//    }
-
 }
