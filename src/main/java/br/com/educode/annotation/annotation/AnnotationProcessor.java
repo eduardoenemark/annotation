@@ -27,7 +27,7 @@ public class AnnotationProcessor {
         super();
     }
 
-    private AnnotationProcessor(AnnotationLogic[] annotationLogics) {
+    public AnnotationProcessor(AnnotationLogic[] annotationLogics) {
         this(Arrays.asList(annotationLogics));
     }
 
@@ -61,7 +61,7 @@ public class AnnotationProcessor {
                     exception.printStackTrace();
                     continue;
                 }
-                AnnotationLogic annotationLogic = annotationLogics.get(annotation.getClass());
+                AnnotationLogic annotationLogic = annotationLogics.get(annotation.annotationType());
                 if (annotationLogic == null) {
                     continue;
                 }

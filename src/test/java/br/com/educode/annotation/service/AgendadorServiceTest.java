@@ -9,6 +9,7 @@ import br.com.educode.annotation.annotation.AnnotationException;
 import br.com.educode.annotation.annotation.UpperCase;
 import br.com.educode.annotation.annotation.logic.AnnotationLogic;
 import br.com.educode.annotation.annotation.logic.impl.UpperCaseLogic;
+import br.com.educode.annotation.model.Agendador;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -22,6 +23,7 @@ import static org.junit.Assert.*;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import java.lang.annotation.Annotation;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -59,11 +61,11 @@ public class AgendadorServiceTest {
      */
     @Test
     public void testInsertDataInvalida() throws Exception {
-//        thrown.expect(AnnotationException.class);
+        thrown.expect(AnnotationException.class);
 
-//        Agendador agendador = new Agendador("task02", LocalDate.of(1980, 2, 1));
-//        AgendadorService agendadorService = new AgendadorService();
-//        agendadorService.insert(agendador);
+        Agendador agendador = new Agendador("task02", LocalDate.of(1980, 2, 1));
+        AgendadorService agendadorService = new AgendadorService();
+        agendadorService.insert(agendador);
           assertTrue(true);
     }
 
