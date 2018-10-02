@@ -9,8 +9,8 @@ import br.com.educode.annotation.annotation.AnnotationException;
 import br.com.educode.annotation.annotation.OperationEnum;
 import br.com.educode.annotation.annotation.RandomNumber;
 import br.com.educode.annotation.annotation.logic.AnnotationLogic;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Random;
 
@@ -18,14 +18,13 @@ import java.util.Random;
  *
  * @author u843433
  */
-public class RandomNumberLogic implements AnnotationLogic{
+public class RandomNumberLogic implements AnnotationLogic<RandomNumber>{
 
     @Override
-    public void validate(Annotation annotation, Object object, Field field, Method get, Method set, OperationEnum operacao) throws AnnotationException {
+    public void validate(RandomNumber annotation, Object object, Field field, Method get, Method set, OperationEnum operacao) throws AnnotationException {
         try {
-            RandomNumber rn = (RandomNumber) annotation;
-            set.invoke(object, randomNumber(rn.bound()));
-        } catch (Exception ex) {
+            set.invoke(object, randomNumber(annotation.bound()));
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new AnnotationException(ex.getMessage());
         }
     }

@@ -9,6 +9,12 @@ import static br.com.educode.annotation.annotation.OperationEnum.DELETE;
 import static br.com.educode.annotation.annotation.OperationEnum.INSERT;
 import static br.com.educode.annotation.annotation.OperationEnum.UPDATE;
 import br.com.educode.annotation.annotation.logic.AnnotationLogic;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,8 +24,19 @@ import java.util.Map;
 public class AnnotationProcessor {
     private Map<Class<? extends Annotation>, AnnotationLogic> annotationLogics;
 
-    public AnnotationProcessor(Map<Class<? extends Annotation>, AnnotationLogic> annotationLogics) {
-        this.annotationLogics = annotationLogics;
+    private AnnotationProcessor() {
+        super();
+    }
+
+    public AnnotationProcessor(List<AnnotationLogic> annotationLogics) {
+        this.annotationLogics = new HashMap<>();
+        annotationLogics.forEach((annotationLogic) -> {
+            Class annotation = getFirstAnnotationType(annotationLogic.getClass().getGenericInterfaces());
+            if (annotation == null) {
+                throw new IllegalArgumentException("Each annotation logic must specify an annotation as generic type.");
+            }
+            this.annotationLogics.put(getFirstAnnotationType(annotationLogic.getClass().getGenericInterfaces()), annotationLogic);
+        });
     }
 
     public Object processor(Object object) throws Exception {
@@ -48,7 +65,8 @@ public class AnnotationProcessor {
                 Method set, get;
                 Boolean isFree, isInsert, isUpdate, isDelete;
                 try {
-                    get = getMethod(object.getClass(), "get".concat(field.getName()));
+                    String strGet = (field.getType() == Boolean.TYPE || field.getType() == boolean.class) ? "is" : "get";
+                    get = getMethod(object.getClass(), strGet.concat(field.getName()));
                     set = getMethod(object.getClass(), "set".concat(field.getName()));
                     isFree = (Boolean) free.invoke(annotation);
                     isInsert = (Boolean) insert.invoke(annotation);
@@ -63,47 +81,11 @@ public class AnnotationProcessor {
                     annotationLogic.validate(annotation, object, field, get, set, operationEnum);
                 }
             }
-            if (annotations.length > 0) {
-                for (Annotation annotation : annotations) {
-                    Method set, get;
-                    try {
-                        get = getMethod(object.getClass(), "get".concat(field.getName()));
-                        set = getMethod(object.getClass(), "set".concat(field.getName()));
-
-                    } catch (Exception exception) {
-                        exception.printStackTrace();
-                        continue;
-                    }
-//                    if (annotation instanceof UpperCase) {
-//                        UpperCase uc = (UpperCase) annotation;
-//                        if (applyProcessorOnField(operationEnum, uc.free(), uc.insert(), uc.update(), uc.delete())) {
-//                            String value = (String) get.invoke(object);
-//                            set.invoke(object, upperCase(value));
-//                        }
-//                    } else if (annotation instanceof DateNotLessThanToday) {
-//                        DateNotLessThanToday dt = (DateNotLessThanToday) annotation;
-//                        if (applyProcessorOnField(operationEnum, dt.free(), dt.insert(), dt.update(), dt.delete())) {
-//                            LocalDate now = LocalDate.now();
-//                            LocalDate value = (LocalDate) get.invoke(object);
-//                            if (now.compareTo(value) > 0) {
-//                                if (dt.throwException()) {
-//                                    throw new AnnotationException(dt.exceptionMessage());
-//                                }
-//                            }
-//                        }
-//                    } else if (annotation instanceof RandomNumber) {
-//                        RandomNumber rn = (RandomNumber) annotation;
-//                        if (applyProcessorOnField(operationEnum, rn.free(), rn.insert(), rn.update(), rn.delete())) {
-//                            set.invoke(object, randomNumber(rn.bound()));
-//                        }
-//                    }
-                }
-            }
         }
         return null;
     }
 
-    public static boolean applyProcessorOnField(
+    public boolean applyProcessorOnField(
             OperationEnum operationEnum,
             boolean free,
             boolean insert,
@@ -136,6 +118,36 @@ public class AnnotationProcessor {
         return null;
     }
 
+    private static Class getFirstAnnotationType(Type[] types) {
+        Class annotation;
+        for (Type type : types) {
+            annotation = getAnnotationType(type);
+            if(annotation != null) {
+                return annotation;
+            }
+        }
+        return null;
+    }
+
+    private static Class getAnnotationType(Type type) {
+        if (type instanceof Class) {
+            Class classToCheck = (Class) type;
+            List<Class> interfaces = Arrays.asList(classToCheck.getInterfaces());
+            if (interfaces.contains(Annotation.class)) {
+                return classToCheck;
+            }
+        } else if (type instanceof ParameterizedType) {
+            Type[] aType = ((ParameterizedType) type).getActualTypeArguments();
+            for (Type type1 : aType) {
+                return getAnnotationType(type1);
+            }
+        } else if (type instanceof GenericArrayType) {
+            Type genericComponentType =
+                    ((GenericArrayType) type).getGenericComponentType();
+            return getAnnotationType(genericComponentType);
+        }
+        return null;
+    }
 //    public static String upperCase(String value) {
 //        return (value != null) ? value.toUpperCase() : null;
 //    }
